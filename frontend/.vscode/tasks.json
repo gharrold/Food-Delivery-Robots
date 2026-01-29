@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Frontend Dev Server",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Convert Frontend to TypeScript",
+			"type": "shell",
+			"command": "npx --yes --package typescript --package @types/react --package @types/react-dom --package @types/leaflet --package @vitejs/plugin-react --package @types/react-leaflet --package vite --package @types/node tsc --init && npm install --save-dev typescript @types/react @types/react-dom @types/leaflet @types/react-leaflet @types/node && npx --yes --package @vitejs/plugin-react vite --force && npx --yes --package typescript --package @types/react --package @types/react-dom --package @types/leaflet --package @types/react-leaflet --package @types/node tsc --build",
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

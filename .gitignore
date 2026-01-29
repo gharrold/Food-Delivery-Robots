@@ -1,0 +1,11 @@
+# Dependencies
+frontend/node_modules/
+frontend/dist/
+backend/node_modules/
+
+# Build artifacts
+build/
+dist/
+out/
+dist-ssr/
+*.tgz
