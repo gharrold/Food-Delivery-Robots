@@ -21,26 +21,36 @@ interface RobotsResponse {
   robots: LatLngExpression[];
 }
 
-const MapView: React.FC = () => {
-  const [robots, setRobots] = useState<LatLngExpression[]>([]);
+
+interface MapViewProps {
+  autoRunning: boolean;
+  moveIntervalMs: number;
+  robots: LatLngExpression[];
+  setRobots: (robots: LatLngExpression[]) => void;
+}
+
+
+const MapView: React.FC<MapViewProps> = ({ autoRunning, moveIntervalMs, robots, setRobots }) => {
 
   useEffect(() => {
-    fetch('/robots')
-      .then(res => res.json())
-      .then((data: RobotsResponse) => setRobots(data.robots));
-    const interval = setInterval(() => {
-      fetch('/robots')
-        .then(res => res.json())
-        .then((data: RobotsResponse) => setRobots(data.robots));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    let interval: NodeJS.Timeout | null = null;
+    if (autoRunning) {
+      interval = setInterval(() => {
+        fetch('/robots')
+          .then(res => res.json())
+          .then((data: RobotsResponse) => setRobots(Array.isArray(data.robots) ? data.robots : []));
+      }, moveIntervalMs);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [autoRunning, moveIntervalMs, setRobots]);
 
   return (
     <MapContainer center={[34.0375, -118.25]} zoom={13} className="map-container">
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <Polygon positions={polygon} pathOptions={{ color: 'blue' }} />
-      {robots.map((pos, idx) => (
+      {(robots ?? []).map((pos, idx) => (
         <AnimatedMarker key={idx} position={pos} icon={robotIcon} />
       ))}
     </MapContainer>
