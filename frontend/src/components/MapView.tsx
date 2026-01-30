@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, Polygon } from 'react-leaflet';
 import AnimatedMarker from './AnimatedMarker';
 import L, { LatLngExpression, Icon } from 'leaflet';
@@ -31,20 +32,25 @@ interface MapViewProps {
 
 
 const MapView: React.FC<MapViewProps> = ({ autoRunning, moveIntervalMs, robots, setRobots }) => {
+  const fetchRobots = async () => {
+    const res = await fetch('/robots');
+    const data = await res.json();
+    return Array.isArray(data.robots) ? data.robots : [];
+  };
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (autoRunning) {
-      interval = setInterval(() => {
-        fetch('/robots')
-          .then(res => res.json())
-          .then((data: RobotsResponse) => setRobots(Array.isArray(data.robots) ? data.robots : []));
-      }, moveIntervalMs);
+  const { data: polledRobots = robots } = useQuery({
+    queryKey: ['robots', autoRunning, moveIntervalMs],
+    queryFn: fetchRobots,
+    enabled: autoRunning,
+    refetchInterval: autoRunning ? moveIntervalMs : false,
+    initialData: robots,
+  });
+
+  React.useEffect(() => {
+    if (autoRunning && polledRobots && polledRobots !== robots) {
+      setRobots(polledRobots);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [autoRunning, moveIntervalMs, setRobots]);
+  }, [polledRobots, autoRunning, robots, setRobots]);
 
   return (
     <MapContainer center={[34.0375, -118.25]} zoom={13} className="map-container">
